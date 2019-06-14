@@ -6,5 +6,6 @@ package ru.hunkel.servicesipc;
 interface IPasswordGenerator {
 
     String generatePassword();
+    String generatePasswordWithFixedLenght(int lenght);
 
 }

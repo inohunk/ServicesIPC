@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
 
 
         generate_button.setOnClickListener {
-            Toast.makeText(this,service.generatePassword(),Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,service.generatePasswordWithFixedLenght(2),Toast.LENGTH_SHORT).show()
         }
     }
 
