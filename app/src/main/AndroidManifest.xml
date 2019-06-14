@@ -20,7 +20,9 @@
         <service
                 android:name=".services.PasswordGeneratorService"
                 android:enabled="true"
-                android:exported="true">
+                android:exported="true"
+                android:process=":remotePasswordGenerator"
+        >
         </service>
     </application>
 
