@@ -52,4 +52,9 @@ class MainActivity : AppCompatActivity() {
             Log.i(TAG,"Failed to bind service")
         }
     }
+
+    override fun onStop() {
+        super.onStop()
+        super.unbindService(serviceConnection)
+    }
 }
