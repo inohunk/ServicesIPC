@@ -19,10 +19,9 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var service: IPasswordGenerator
 
-
-    val serviceConnection = object : ServiceConnection{
+    private val serviceConnection = object : ServiceConnection{
         override fun onServiceDisconnected(name: ComponentName?) {
-            //
+
             Log.i(TAG,"service disconnected")
 
         }
@@ -40,7 +39,9 @@ class MainActivity : AppCompatActivity() {
 
 
         generate_button.setOnClickListener {
-            Toast.makeText(this,service.generatePasswordWithFixedLenght(2),Toast.LENGTH_SHORT).show()
+            val length= password_length_edit.text.toString().toInt()
+
+            Toast.makeText(this,service.generatePasswordWithFixedLenght(length),Toast.LENGTH_SHORT).show()
         }
     }
 

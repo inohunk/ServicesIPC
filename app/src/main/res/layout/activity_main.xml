@@ -13,4 +13,13 @@
             android:layout_centerInParent="true"
             android:text="generate"
     />
+    <EditText
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/generate_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/password_length_edit" android:singleLine="true" android:digits="0123456789"
+            android:hint="Password length" android:maxLength="10" android:numeric="integer"/>
 </RelativeLayout>
