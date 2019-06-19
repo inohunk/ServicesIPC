@@ -2,10 +2,7 @@ package ru.hunkel.servicesipc.services
 
 import android.app.Service
 import android.content.Intent
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
-import android.os.Message
+import android.os.*
 import android.util.Log
 import java.util.*
 
@@ -25,7 +22,7 @@ class TestService : Service() {
     }
 
     private inner class ServiceThread : Thread() {
-
+        private val TAG = this.javaClass.simpleName
         init {
             start()
         }
@@ -33,13 +30,13 @@ class TestService : Service() {
         override fun run() {
             Looper.prepare()
             mHandler = ServiceHandler()
+            Log.d(TAG, "looped")
             Looper.loop()
-            Log.d("T", "looped")
         }
     }
 
     private class NumGenerateTask : TimerTask() {
-        private val TAG = this::class.java.simpleName
+        private val TAG = this.javaClass.simpleName
 
         override fun run() {
             val randomNum = kotlin.random.Random.nextInt(0,100).toString()
@@ -64,5 +61,18 @@ class TestService : Service() {
     override fun onBind(intent: Intent?): IBinder? {
 //        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         return null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            mHandler?.looper?.quitSafely()
+        } else {
+            mHandler?.looper?.quit()
+        }
+        if (!Thread.currentThread().isInterrupted) {
+            Thread.currentThread().interrupt()
+    }
+        System.exit(1)
     }
 }
