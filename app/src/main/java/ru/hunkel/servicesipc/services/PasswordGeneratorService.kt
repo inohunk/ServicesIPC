@@ -9,28 +9,36 @@ import ru.hunkel.servicesipc.services.impl.IPasswordGeneratorImpl
 class PasswordGeneratorService : Service() {
 
     private val TAG = this::class.java.simpleName
-    lateinit var service: IPasswordGeneratorImpl
+    private var service: IPasswordGeneratorImpl? = null
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onCreate")
+    override fun onCreate() {
+        super.onCreate()
         service = IPasswordGeneratorImpl()
+        Log.d(TAG, "onCreate")
+    }
+
+    //This method called if service started with startService() command
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand")
 
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onBind(intent: Intent): IBinder {
         Log.d(TAG, "onBind")
-        return service
+        if (service == null) {
+            service = IPasswordGeneratorImpl()
+        }
+        return service!!
     }
 
     override fun onRebind(intent: Intent?) {
         Log.d(TAG, "onReBind")
-        super.onRebind(intent)
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "onUnbind")
-        return super.onUnbind(intent)
+        return false
     }
 
     override fun onDestroy() {
