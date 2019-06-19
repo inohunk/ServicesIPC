@@ -43,6 +43,7 @@ class PasswordGeneratorService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
-        super.onDestroy()
+        System.exit(1)
+        stopSelf()
     }
 }
