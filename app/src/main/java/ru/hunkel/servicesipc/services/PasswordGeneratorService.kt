@@ -11,10 +11,11 @@ class PasswordGeneratorService : Service() {
     private val TAG = this::class.java.simpleName
     lateinit var service: IPasswordGeneratorImpl
 
-    override fun onCreate() {
-        super.onCreate()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onCreate")
         service = IPasswordGeneratorImpl()
+
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onBind(intent: Intent): IBinder {
