@@ -24,6 +24,11 @@
                 android:process=":remotePasswordGenerator"
         >
         </service>
+
+        <service
+                android:name=".services.TestService"
+                android:process=":TestService"
+        />
     </application>
 
 </manifest>
