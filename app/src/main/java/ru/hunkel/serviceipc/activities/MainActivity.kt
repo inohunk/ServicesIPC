@@ -4,31 +4,33 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.hunkel.servicesipc.IPasswordGenerator
 import ru.hunkel.servicesipc.R
 import ru.hunkel.servicesipc.services.PasswordGeneratorService
 
-const val TAG = "MainActivity"
 class MainActivity : AppCompatActivity() {
+    private val TAG = this::class.java.simpleName
+    var service: IPasswordGenerator? = null
+    var isBound = false
 
-    lateinit var service: IPasswordGenerator
-
-    private val serviceConnection = object : ServiceConnection{
+    private val serviceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
-
-            Log.i(TAG,"service disconnected")
+            isBound = false
+            service = null
+            Log.i(TAG, "service disconnected")
 
         }
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             this@MainActivity.service = IPasswordGenerator.Stub.asInterface(service)
-            Log.i(TAG,"service connected")
+            isBound = true
+            Log.i(TAG, "service connected")
 
         }
     }
@@ -37,24 +39,50 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         generate_button.setOnClickListener {
-            val length= password_length_edit.text.toString().toInt()
-
-            Toast.makeText(this,service.generatePasswordWithFixedLenght(length),Toast.LENGTH_SHORT).show()
+            onGenerateClick()
         }
+
+        start_stop_button.setOnClickListener {
+            onStartStopClicked()
+        }
+        updateUI()
     }
 
-    override fun onStart() {
-        super.onStart()
+    private fun onGenerateClick() {
 
-        if (!super.bindService(Intent(this,PasswordGeneratorService::class.java),serviceConnection, Context.BIND_AUTO_CREATE)){
-            Log.i(TAG,"Failed to bind service")
+        val passwordLength = password_length_edit.text.toString()
+
+        if (passwordLength.isEmpty()) {
+            Toast.makeText(this, service?.generatePassword(), Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(
+                this,
+                service?.generatePasswordWithFixedLenght(passwordLength.toInt()),
+                Toast.LENGTH_SHORT
+            ).show()
         }
+
     }
 
-    override fun onStop() {
-        super.onStop()
-        super.unbindService(serviceConnection)
+    private fun onStartStopClicked() {
+        val intent = Intent(this, PasswordGeneratorService::class.java)
+
+        isBound = if (isBound) {
+            unbindService(serviceConnection)
+            false
+        } else {
+            bindService(
+                intent,
+                serviceConnection,
+                Context.BIND_AUTO_CREATE
+            )
+        }
+        updateUI()
+    }
+
+    private fun updateUI() {
+        start_stop_button.text = if (isBound) "STOP" else "START"
+        generate_button.isEnabled = isBound
     }
 }

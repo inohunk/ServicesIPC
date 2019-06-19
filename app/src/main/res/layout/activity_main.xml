@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="ru.hunkel.serviceipc.activities.MainActivity">
-    <Button
-            android:id="@+id/generate_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="generate"
-    />
     <EditText
             android:layout_centerHorizontal="true"
             android:layout_above="@+id/generate_button"
@@ -22,4 +14,19 @@
             android:ems="10"
             android:id="@+id/password_length_edit" android:singleLine="true" android:digits="0123456789"
             android:hint="Password length" android:maxLength="10" android:numeric="integer"/>
+    <Button
+            android:id="@+id/generate_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="generate"
+    />
+    <Button
+            android:text="START/STOP"
+            android:layout_below="@id/generate_button"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/start_stop_button"
+    />
+
 </RelativeLayout>
