@@ -4,16 +4,16 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import ru.hunkel.servicesipc.services.impl.IPasswordGeneratorImpl
+import ru.hunkel.servicesipc.services.impl.PasswordGeneratorImpl
 
 class PasswordGeneratorService : Service() {
 
     private val TAG = this::class.java.simpleName
-    private var service: IPasswordGeneratorImpl? = null
+    private var service: PasswordGeneratorImpl? = null
 
     override fun onCreate() {
         super.onCreate()
-        service = IPasswordGeneratorImpl()
+        service = PasswordGeneratorImpl()
         Log.d(TAG, "onCreate")
     }
 
@@ -27,7 +27,7 @@ class PasswordGeneratorService : Service() {
     override fun onBind(intent: Intent): IBinder {
         Log.d(TAG, "onBind")
         if (service == null) {
-            service = IPasswordGeneratorImpl()
+            service = PasswordGeneratorImpl()
         }
         return service!!
     }

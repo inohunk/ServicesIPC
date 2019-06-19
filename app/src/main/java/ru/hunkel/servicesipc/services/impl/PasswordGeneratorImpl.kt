@@ -2,7 +2,7 @@ package ru.hunkel.servicesipc.services.impl
 
 import ru.hunkel.servicesipc.IPasswordGenerator
 
-class IPasswordGeneratorImpl : IPasswordGenerator.Stub() {
+class PasswordGeneratorImpl : IPasswordGenerator.Stub() {
 
 
     private val SYMBOLS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
