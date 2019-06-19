@@ -39,7 +39,7 @@ class TestService : Service() {
         private val TAG = this.javaClass.simpleName
 
         override fun run() {
-            val randomNum = kotlin.random.Random.nextInt(0,100).toString()
+            val randomNum = kotlin.random.Random.nextInt(0, 100).toString()
             Log.i(TAG, randomNum)
         }
     }
@@ -53,8 +53,8 @@ class TestService : Service() {
 
         val task = NumGenerateTask()
 
-        with(Timer()){
-            schedule(task,1000L)
+        with(Timer()) {
+            schedule(task, 0L,1000L)
         }
     }
 
