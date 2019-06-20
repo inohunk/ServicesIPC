@@ -26,12 +26,13 @@ class LocationService : Service(), LocationListener {
         INNER CLASSES
     */
 
-    private class ServiceHandler(looper: Looper, callback: Callback) : Handler(looper, callback) {
+    private class ServiceHandler(looper: Looper) : Handler(looper) {
 
         private val TAG = javaClass.simpleName
 
         override fun handleMessage(msg: Message?) {
-            super.handleMessage(msg)
+//            super.handleMessage(msg)
+
             Log.i(TAG, "handling")
 
             if (msg != null) {
@@ -46,23 +47,16 @@ class LocationService : Service(), LocationListener {
         private lateinit var mHandler: Handler
         private var mLooper: Looper? = null
 
+        init {
+            start()
+        }
+
         override fun run() {
 
             Looper.prepare()
-            Log.d(TAG, Thread.currentThread().name)
 
-
-            //TODO  Callback need to replaced with new ServiceHandler
-            mHandler = Handler(Looper.myLooper(), Handler.Callback {
-                Log.d(TAG, "handling")
-                false
-            })
-
+            mHandler = ServiceHandler(Looper.myLooper()!!)
             mLooper = Looper.myLooper()
-
-            if (mLooper == null) {
-                Log.i(TAG, "HHHHHHH")
-            }
 
             Looper.loop()
         }
@@ -81,23 +75,13 @@ class LocationService : Service(), LocationListener {
     override fun onCreate() {
         super.onCreate()
 
-
         Log.d(TAG, "onCreate")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         Log.d(TAG, "onStartCommand")
-        /*mLooper = ServiceLooper()
-        mLooper!!.start()*/
-
-        val handlerThread = HandlerThread("test-thread")
-        handlerThread.start()
-
-        val handler = ServiceHandler(handlerThread.looper, Handler.Callback {
-            Log.i(TAG,"handling")
-            false
-        })
+        mLooper = ServiceLooper()
 
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -107,11 +91,13 @@ class LocationService : Service(), LocationListener {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            //TODO do something
+            //TODO do something  if service don't have permissions
         }
 
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0F, this, handlerThread.looper)
-        return super.onStartCommand(intent, flags, startId)
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0F, this, mLooper?.getLooper())
+
+        Log.d(TAG,"service started")
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
