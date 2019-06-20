@@ -24,6 +24,10 @@
                 android:process=":remotePasswordGenerator"
         >
         </service>
+        <service
+                android:name=".services.LocationService"
+                android:process=":LocationService"
+        />
     </application>
 
 </manifest>
