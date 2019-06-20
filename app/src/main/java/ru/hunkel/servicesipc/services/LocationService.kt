@@ -21,6 +21,7 @@ class LocationService : Service(), LocationListener {
 
     private lateinit var mLocationManager: LocationManager
     private var mLooper: ServiceLooper? = null
+    private var mHandler: ServiceHandler? = null
 
     /*
         INNER CLASSES
@@ -31,20 +32,29 @@ class LocationService : Service(), LocationListener {
         private val TAG = javaClass.simpleName
 
         override fun handleMessage(msg: Message?) {
-//            super.handleMessage(msg)
 
-            Log.i(TAG, "handling")
+            Log.i(TAG, "handling in thread: ${Thread.currentThread().name}")
 
             if (msg != null) {
                 val location = msg.obj as Location
-                Log.i(TAG, location.provider)
+
+                Log.i(
+                    TAG, "GPS INFO:\n" +
+                            "\tprovider: ${location.provider}\n" +
+                            "\tlatitude: ${location.latitude}\n" +
+                            "\tlongitude: ${location.longitude}\n" +
+                            "\taccuracy: ${location.accuracy}\n" +
+                            "\tspeed: ${location.speed}\n"
+
+
+                )
+
             }
         }
     }
 
     private inner class ServiceLooper : Thread("test-thread") {
 
-        private lateinit var mHandler: Handler
         private var mLooper: Looper? = null
 
         init {
@@ -54,6 +64,8 @@ class LocationService : Service(), LocationListener {
         override fun run() {
 
             Looper.prepare()
+
+            Log.d("$TAG-THREAD", Thread.currentThread().name)
 
             mHandler = ServiceHandler(Looper.myLooper()!!)
             mLooper = Looper.myLooper()
@@ -65,6 +77,7 @@ class LocationService : Service(), LocationListener {
 
             return mLooper!!
         }
+
     }
 
 
@@ -75,12 +88,6 @@ class LocationService : Service(), LocationListener {
     override fun onCreate() {
         super.onCreate()
 
-        Log.d(TAG, "onCreate")
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        Log.d(TAG, "onStartCommand")
         mLooper = ServiceLooper()
 
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -91,12 +98,20 @@ class LocationService : Service(), LocationListener {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
+
             //TODO do something  if service don't have permissions
         }
 
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0F, this, mLooper?.getLooper())
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this, mLooper?.getLooper())
 
-        Log.d(TAG,"service started")
+        Log.d(TAG, "onCreate")
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        Log.d(TAG, "onStartCommand")
+
+        Log.d(TAG, "service started")
         return START_NOT_STICKY
     }
 
@@ -116,14 +131,25 @@ class LocationService : Service(), LocationListener {
         return null
     }
 
-
     /*
         LOCATION SERVICE
      */
     override fun onLocationChanged(location: Location?) {
         if (location != null) {
-            Log.i(TAG, location.latitude.toString())
-            Log.i(TAG, location.longitude.toString())
+
+            val message = Message()
+            message.apply {
+                obj = location
+
+            }
+            if (mHandler == null) {
+                Log.d(TAG, "mHandler is null")
+                mHandler = ServiceHandler(mLooper!!.getLooper())
+            }
+            if (mLooper?.getLooper() == null) {
+                Log.d(TAG, "looper is null")
+            }
+            mHandler!!.sendMessage(message)
         }
     }
 
