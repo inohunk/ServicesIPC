@@ -73,6 +73,28 @@ class LocationService : Service(), LocationListener {
         }
     }
 
+    private inner class ServiceLooper : HandlerThread("test-thread") {
+
+        private var mHandler: ServiceHandlerWithLooper? = null
+        private lateinit var mLooper: Looper
+
+        init {
+            start()
+        }
+        override fun onLooperPrepared() {
+            mLooper = looper
+            mHandler = ServiceHandlerWithLooper(mLooper)
+
+        }
+
+        fun sendTask(location: Location) {
+            mHandler!!.obtainMessage().apply {
+                obj = location
+            }.sendToTarget()
+        }
+    }
+
+    // OLD
     private class ServiceHandler : Handler() {
 
         private val TAG = javaClass.simpleName
@@ -95,42 +117,22 @@ class LocationService : Service(), LocationListener {
             }
         }
     }
-
-    private inner class ServiceLooper : HandlerThread("test-thread") {
-
-        private var mHandler: ServiceHandlerWithLooper? = null
-
-        fun prepareHandler() {
-            mHandler = ServiceHandlerWithLooper(looper)
-        }
-        fun getHandler(): ServiceHandlerWithLooper{
-            return mHandler!!
-        }
-
-    }
-
-
     /*
         LIFECYCLE
     */
 
     override fun onCreate() {
-        super.onCreate()
-
         Log.d(TAG, "onCreate")
         Log.d(TAG, "service started")
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         Log.d(TAG, "onStartCommand")
-
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         stopGpsTracking()
         Log.d(TAG, "onDestroy")
         exitProcess(1)
@@ -148,14 +150,9 @@ class LocationService : Service(), LocationListener {
         LOCATION SERVICE
      */
     override fun onLocationChanged(location: Location?) {
+        Log.d("$TAG-THREAD-LOCATION", Thread.currentThread().name)
         if (location != null) {
-
-            val message = Message()
-            message.apply {
-                obj = location
-            }
-
-            mServiceHandler!!.sendMessage(message)
+            mServiceLooper?.sendTask(location)
         }
     }
 
@@ -184,16 +181,13 @@ class LocationService : Service(), LocationListener {
     private fun startGpsTracking() {
         if (isTracking.not()) {
             mServiceLooper = ServiceLooper()
-            mServiceLooper?.start()
-            mServiceLooper?.prepareHandler()
-
-            mServiceHandler = mServiceLooper?.getHandler()
 
             if (mServiceLooper?.looper == null) {
                 Log.d(TAG, "test looper is null")
             } else {
                 Log.d(TAG, "test looper active")
             }
+
             Log.d("$TAG-THREAD", Thread.currentThread().name)
             mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 

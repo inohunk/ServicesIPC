@@ -21,11 +21,16 @@ import ru.hunkel.servicesipc.services.LocationService
 import ru.hunkel.servicesipc.services.PasswordGeneratorService
 import utils.LOCATION_SERVICE_TRACKING_ON
 
-const val REQUEST_CODE_PERMISSIONS = 0
+private const val REQUEST_CODE_PERMISSIONS = 0
 
 class MainActivity : AppCompatActivity() {
     private val TAG = this::class.java.simpleName
 
+    /*
+        VARIABLES
+    */
+
+    //PASSWORD GENERATOR SERVICE
     var passwordService: IPasswordGenerator? = null
     var passwordServiceBounded = false
     private val passwordServiceConnection = object : ServiceConnection {
@@ -44,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //LOCATION SERVICE
     var locationService: ILocationService? = null
     var locationServiceBounded = false
     private val locationServiceConnection = object : ServiceConnection {
