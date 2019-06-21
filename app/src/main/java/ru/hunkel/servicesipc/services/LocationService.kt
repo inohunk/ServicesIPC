@@ -99,7 +99,7 @@ class LocationService : Service(), LocationListener {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
 
-            //TODO do something  if service don't have permissions
+            //TODO do something  if passwordService don't have permissions
         }
 
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this, mLooper?.getLooper())

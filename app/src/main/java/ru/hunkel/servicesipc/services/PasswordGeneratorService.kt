@@ -17,7 +17,7 @@ class PasswordGeneratorService : Service() {
         Log.d(TAG, "onCreate")
     }
 
-    //This method called if service started with startService() command
+    //This method called if passwordService started with startService() command
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand")
 
