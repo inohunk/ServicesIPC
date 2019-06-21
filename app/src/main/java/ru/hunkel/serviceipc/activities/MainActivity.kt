@@ -13,6 +13,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import ru.hunkel.servicesipc.ILocationService
 import ru.hunkel.servicesipc.IPasswordGenerator
 import ru.hunkel.servicesipc.R
 import ru.hunkel.servicesipc.services.LocationService
@@ -22,12 +23,12 @@ const val REQUEST_CODE_PERMISSIONS = 0
 
 class MainActivity : AppCompatActivity() {
     private val TAG = this::class.java.simpleName
-    var passwordService: IPasswordGenerator? = null
-    var isBound = false
 
+    var passwordService: IPasswordGenerator? = null
+    var passwordServiceBounded = false
     private val passwordServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
-            isBound = false
+            passwordServiceBounded = false
             passwordService = null
             Log.i(TAG, "passwordService disconnected")
 
@@ -35,11 +36,27 @@ class MainActivity : AppCompatActivity() {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             this@MainActivity.passwordService = IPasswordGenerator.Stub.asInterface(service)
-            isBound = true
+            passwordServiceBounded = true
             Log.i(TAG, "passwordService connected")
 
         }
     }
+
+    var locationService: ILocationService? = null
+    var locationServiceBounded = false
+    private val locationServiceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+            locationServiceBounded = false
+            locationService = null
+            Log.i(TAG, "locationService disconnected")
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            this@MainActivity.locationService = ILocationService.Stub.asInterface(service)
+            Log.i(TAG, "locationService connected")
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,16 +89,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onStartStopClicked() {
-        val intent = Intent(this, PasswordGeneratorService::class.java)
+        val passwordServiceIntent = Intent(this, PasswordGeneratorService::class.java)
 
-        isBound = if (isBound) {
+        passwordServiceBounded = if (passwordServiceBounded) {
             stopLocationService()
             unbindService(passwordServiceConnection)
             false
         } else {
             acceptPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
+
             bindService(
-                intent,
+                passwordServiceIntent,
                 passwordServiceConnection,
                 Context.BIND_AUTO_CREATE
             )
@@ -90,10 +108,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startLocationService() {
+        val locationServiceIntent = Intent(this, LocationService::class.java)
+
         startService(Intent(this, LocationService::class.java))
+        bindService(
+            locationServiceIntent,
+            locationServiceConnection,
+            Context.BIND_AUTO_CREATE
+        )
     }
 
     private fun stopLocationService() {
+        if (locationServiceBounded) {
+            unbindService(locationServiceConnection)
+        }
         stopService(Intent(this, LocationService::class.java))
 
     }
@@ -142,7 +170,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        start_stop_button.text = if (isBound) "STOP" else "START"
-        generate_button.isEnabled = isBound
+        start_stop_button.text = if (passwordServiceBounded) "STOP" else "START"
+        generate_button.isEnabled = passwordServiceBounded
     }
 }

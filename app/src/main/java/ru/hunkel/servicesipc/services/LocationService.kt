@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.os.*
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import ru.hunkel.servicesipc.ILocationService
 
 class LocationService : Service(), LocationListener {
 
@@ -26,6 +27,16 @@ class LocationService : Service(), LocationListener {
     /*
         INNER CLASSES
     */
+
+    private inner class LocationServiceImpl : ILocationService.Stub() {
+        override fun startTracking() {
+
+        }
+
+        override fun stopTracking() {
+
+        }
+    }
 
     private class ServiceHandler(looper: Looper) : Handler(looper) {
 
@@ -128,8 +139,7 @@ class LocationService : Service(), LocationListener {
         BINDING INTERFACE
      */
     override fun onBind(intent: Intent?): IBinder? {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        return null
+        return LocationServiceImpl()
     }
 
     /*
