@@ -12,6 +12,9 @@ import android.os.*
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import ru.hunkel.servicesipc.ILocationService
+import utils.LOCATION_SERVICE_TRACKING_OFF
+import utils.LOCATION_SERVICE_TRACKING_ON
+import kotlin.system.exitProcess
 
 class LocationService : Service(), LocationListener {
 
@@ -20,9 +23,12 @@ class LocationService : Service(), LocationListener {
     */
     private val TAG = this.javaClass.simpleName
 
-    private lateinit var mLocationManager: LocationManager
-    private var mLooper: ServiceLooper? = null
-    private var mHandler: ServiceHandler? = null
+    private var mLocationManager: LocationManager? = null
+    private var mServiceLooper: ServiceLooper? = null
+    private var mServiceHandler: ServiceHandlerWithLooper? = null
+
+    private var isTracking = false
+
 
     /*
         INNER CLASSES
@@ -30,15 +36,21 @@ class LocationService : Service(), LocationListener {
 
     private inner class LocationServiceImpl : ILocationService.Stub() {
         override fun startTracking() {
-
+            startGpsTracking()
+            printServiceInfo()
         }
 
         override fun stopTracking() {
+            stopGpsTracking()
+            printServiceInfo()
+        }
 
+        override fun getTrackingState(): Int {
+            return if (isTracking) LOCATION_SERVICE_TRACKING_ON else LOCATION_SERVICE_TRACKING_OFF
         }
     }
 
-    private class ServiceHandler(looper: Looper) : Handler(looper) {
+    private class ServiceHandlerWithLooper(looper: Looper) : Handler(looper) {
 
         private val TAG = javaClass.simpleName
 
@@ -56,37 +68,43 @@ class LocationService : Service(), LocationListener {
                             "\tlongitude: ${location.longitude}\n" +
                             "\taccuracy: ${location.accuracy}\n" +
                             "\tspeed: ${location.speed}\n"
-
-
                 )
-
             }
         }
     }
 
-    private inner class ServiceLooper : Thread("test-thread") {
+    private class ServiceHandler : Handler() {
 
-        private var mLooper: Looper? = null
+        private val TAG = javaClass.simpleName
 
-        init {
-            start()
+        override fun handleMessage(msg: Message?) {
+
+            Log.i(TAG, "handling in thread: ${Thread.currentThread().name}")
+
+            if (msg != null) {
+                val location = msg.obj as Location
+
+                Log.i(
+                    TAG, "GPS INFO:\n" +
+                            "\tprovider: ${location.provider}\n" +
+                            "\tlatitude: ${location.latitude}\n" +
+                            "\tlongitude: ${location.longitude}\n" +
+                            "\taccuracy: ${location.accuracy}\n" +
+                            "\tspeed: ${location.speed}\n"
+                )
+            }
         }
+    }
 
-        override fun run() {
+    private inner class ServiceLooper : HandlerThread("test-thread") {
 
-            Looper.prepare()
+        private var mHandler: ServiceHandlerWithLooper? = null
 
-            Log.d("$TAG-THREAD", Thread.currentThread().name)
-
-            mHandler = ServiceHandler(Looper.myLooper()!!)
-            mLooper = Looper.myLooper()
-
-            Looper.loop()
+        fun prepareHandler() {
+            mHandler = ServiceHandlerWithLooper(looper)
         }
-
-        fun getLooper(): Looper {
-
-            return mLooper!!
+        fun getHandler(): ServiceHandlerWithLooper{
+            return mHandler!!
         }
 
     }
@@ -98,22 +116,6 @@ class LocationService : Service(), LocationListener {
 
     override fun onCreate() {
         super.onCreate()
-
-        mLooper = ServiceLooper()
-
-        mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        //TODO rewrite
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-
-            //TODO do something  if passwordService don't have permissions
-        }
-
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this, mLooper?.getLooper())
 
         Log.d(TAG, "onCreate")
         Log.d(TAG, "service started")
@@ -129,9 +131,9 @@ class LocationService : Service(), LocationListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        stopService()
-
+        stopGpsTracking()
         Log.d(TAG, "onDestroy")
+        exitProcess(1)
 
     }
 
@@ -151,16 +153,9 @@ class LocationService : Service(), LocationListener {
             val message = Message()
             message.apply {
                 obj = location
+            }
 
-            }
-            if (mHandler == null) {
-                Log.d(TAG, "mHandler is null")
-                mHandler = ServiceHandler(mLooper!!.getLooper())
-            }
-            if (mLooper?.getLooper() == null) {
-                Log.d(TAG, "looper is null")
-            }
-            mHandler!!.sendMessage(message)
+            mServiceHandler!!.sendMessage(message)
         }
     }
 
@@ -183,7 +178,65 @@ class LocationService : Service(), LocationListener {
         }
     }
 
-    private fun stopService() {
-        mLocationManager.removeUpdates(this)
+    /*
+        FUNCTIONS
+     */
+    private fun startGpsTracking() {
+        if (isTracking.not()) {
+            mServiceLooper = ServiceLooper()
+            mServiceLooper?.start()
+            mServiceLooper?.prepareHandler()
+
+            mServiceHandler = mServiceLooper?.getHandler()
+
+            if (mServiceLooper?.looper == null) {
+                Log.d(TAG, "test looper is null")
+            } else {
+                Log.d(TAG, "test looper active")
+            }
+            Log.d("$TAG-THREAD", Thread.currentThread().name)
+            mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+            if (ActivityCompat.checkSelfPermission(
+                    this@LocationService,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                //TODO do something  if passwordService don't have permissions
+            }
+
+            mLocationManager?.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                5000,
+                0F,
+                this@LocationService,
+                mServiceLooper!!.looper
+            )
+            isTracking = true
+        }
+    }
+
+    private fun stopGpsTracking() {
+        if (isTracking) {
+            removeGpsUpdates()
+            mServiceLooper?.looper?.thread?.interrupt()
+            mServiceLooper?.interrupt()
+            mLocationManager = null
+            mServiceLooper = null
+            mServiceHandler = null
+            isTracking = false
+        }
+    }
+
+    private fun removeGpsUpdates() {
+        if (isTracking) {
+            mLocationManager?.removeUpdates(this)
+        }
+    }
+
+    private fun printServiceInfo() {
+        Log.d(TAG, "tracking: $isTracking")
+
     }
 }

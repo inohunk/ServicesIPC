@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -18,6 +19,7 @@ import ru.hunkel.servicesipc.IPasswordGenerator
 import ru.hunkel.servicesipc.R
 import ru.hunkel.servicesipc.services.LocationService
 import ru.hunkel.servicesipc.services.PasswordGeneratorService
+import utils.LOCATION_SERVICE_TRACKING_ON
 
 const val REQUEST_CODE_PERMISSIONS = 0
 
@@ -49,11 +51,13 @@ class MainActivity : AppCompatActivity() {
             locationServiceBounded = false
             locationService = null
             Log.i(TAG, "locationService disconnected")
+            updateUI()
         }
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             this@MainActivity.locationService = ILocationService.Stub.asInterface(service)
             Log.i(TAG, "locationService connected")
+            updateUI()
         }
     }
 
@@ -64,10 +68,16 @@ class MainActivity : AppCompatActivity() {
 
         generate_button.setOnClickListener {
             onGenerateClick()
+            updateUI()
         }
 
         start_stop_button.setOnClickListener {
             onStartStopClicked()
+            updateUI()
+        }
+        start_stop_tracking_button.setOnClickListener {
+            onStartStopTrackingClicked()
+            updateUI()
         }
         updateUI()
     }
@@ -107,6 +117,16 @@ class MainActivity : AppCompatActivity() {
         updateUI()
     }
 
+    private fun onStartStopTrackingClicked() {
+        val isTrackingNow = locationService?.trackingState == LOCATION_SERVICE_TRACKING_ON
+
+        if (isTrackingNow) {
+            locationService?.stopTracking()
+        } else {
+            locationService?.startTracking()
+        }
+    }
+
     private fun startLocationService() {
         val locationServiceIntent = Intent(this, LocationService::class.java)
 
@@ -116,14 +136,15 @@ class MainActivity : AppCompatActivity() {
             locationServiceConnection,
             Context.BIND_AUTO_CREATE
         )
+        locationServiceBounded = true
     }
 
     private fun stopLocationService() {
         if (locationServiceBounded) {
             unbindService(locationServiceConnection)
+            locationServiceBounded = false
         }
         stopService(Intent(this, LocationService::class.java))
-
     }
 
     private fun acceptPermissions(permissions: Array<String>) {
@@ -161,16 +182,24 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this, "The app need a permissions", Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         }
-
     }
 
     private fun updateUI() {
         start_stop_button.text = if (passwordServiceBounded) "STOP" else "START"
         generate_button.isEnabled = passwordServiceBounded
+
+        if (locationServiceBounded) {
+            start_stop_tracking_button.visibility = View.VISIBLE
+            if ((locationService?.trackingState == LOCATION_SERVICE_TRACKING_ON)) {
+                start_stop_tracking_button.text = "TRACKING: ON"
+            } else {
+                start_stop_tracking_button.text = "TRACKING: OFF"
+            }
+        } else {
+            start_stop_tracking_button.visibility = View.INVISIBLE
+        }
     }
 }
