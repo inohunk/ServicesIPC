@@ -103,10 +103,9 @@ class MainActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (permission in permissions) {
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (checkSelfPermission((permission)) == PackageManager.PERMISSION_GRANTED) {
                     startLocationService()
                 } else {
-                    //TODO make check for all permission requests
                     if (shouldShowRequestPermissionRationale(permission)) {
                         Toast.makeText(this, "Location permission needed for tracking", Toast.LENGTH_SHORT).show()
                     }
@@ -114,7 +113,7 @@ class MainActivity : AppCompatActivity() {
             }
             requestPermissions(permissions, REQUEST_CODE_PERMISSIONS)
         } else {
-            //TODO do something cos the permission is already accepted on API<23
+            startLocationService()
         }
     }
 

@@ -105,13 +105,14 @@ class LocationService : Service(), LocationListener {
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0F, this, mLooper?.getLooper())
 
         Log.d(TAG, "onCreate")
+        Log.d(TAG, "service started")
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         Log.d(TAG, "onStartCommand")
 
-        Log.d(TAG, "service started")
         return START_NOT_STICKY
     }
 
