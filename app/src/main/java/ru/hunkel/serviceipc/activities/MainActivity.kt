@@ -22,21 +22,21 @@ const val REQUEST_CODE_PERMISSIONS = 0
 
 class MainActivity : AppCompatActivity() {
     private val TAG = this::class.java.simpleName
-    var service: IPasswordGenerator? = null
+    var passwordService: IPasswordGenerator? = null
     var isBound = false
 
-    private val serviceConnection = object : ServiceConnection {
+    private val passwordServiceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName?) {
             isBound = false
-            service = null
-            Log.i(TAG, "service disconnected")
+            passwordService = null
+            Log.i(TAG, "passwordService disconnected")
 
         }
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            this@MainActivity.service = IPasswordGenerator.Stub.asInterface(service)
+            this@MainActivity.passwordService = IPasswordGenerator.Stub.asInterface(service)
             isBound = true
-            Log.i(TAG, "service connected")
+            Log.i(TAG, "passwordService connected")
 
         }
     }
@@ -60,11 +60,11 @@ class MainActivity : AppCompatActivity() {
         val passwordLength = password_length_edit.text.toString()
 
         if (passwordLength.isEmpty()) {
-            Toast.makeText(this, service?.generatePassword(), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, passwordService?.generatePassword(), Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(
                 this,
-                service?.generatePasswordWithFixedLenght(passwordLength.toInt()),
+                passwordService?.generatePasswordWithFixedLenght(passwordLength.toInt()),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -76,13 +76,13 @@ class MainActivity : AppCompatActivity() {
 
         isBound = if (isBound) {
             stopLocationService()
-            unbindService(serviceConnection)
+            unbindService(passwordServiceConnection)
             false
         } else {
             acceptPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
             bindService(
                 intent,
-                serviceConnection,
+                passwordServiceConnection,
                 Context.BIND_AUTO_CREATE
             )
         }
@@ -91,7 +91,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun startLocationService() {
         startService(Intent(this, LocationService::class.java))
-
     }
 
     private fun stopLocationService() {
@@ -103,12 +102,12 @@ class MainActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (permission in permissions) {
-                if (checkSelfPermission((permission)) == PackageManager.PERMISSION_GRANTED) {
-                    startLocationService()
-                } else {
-                    if (shouldShowRequestPermissionRationale(permission)) {
-                        Toast.makeText(this, "Location permission needed for tracking", Toast.LENGTH_SHORT).show()
-                    }
+                if (
+                    (checkSelfPermission((permission)) != PackageManager.PERMISSION_GRANTED)
+                    and
+                    (shouldShowRequestPermissionRationale(permission))
+                ) {
+                    Toast.makeText(this, "Location permission needed for tracking", Toast.LENGTH_SHORT).show()
                 }
             }
             requestPermissions(permissions, REQUEST_CODE_PERMISSIONS)
@@ -120,11 +119,21 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             REQUEST_CODE_PERMISSIONS -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startLocationService()
-                } else {
-                    Toast.makeText(this, "Location permission needed for tracking", Toast.LENGTH_SHORT).show()
+                var index = 0
+
+                for (permission in permissions) {
+                    if (grantResults[index] == PackageManager.PERMISSION_GRANTED) {
+                        when (permission) {
+                            Manifest.permission.ACCESS_FINE_LOCATION -> {
+                                startLocationService()
+                            }
+                        }
+                        index++
+                    } else {
+                        Toast.makeText(this, "The app need a permissions", Toast.LENGTH_SHORT).show()
+                    }
                 }
+
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
