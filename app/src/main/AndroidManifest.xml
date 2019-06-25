@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="ru.hunkel.servicesipc">
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -9,6 +11,14 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity
+                android:name="ru.hunkel.serviceipc.activities.SettingsActivity"
+                android:label="@string/title_activity_gps_settings"
+                android:parentActivityName="ru.hunkel.serviceipc.activities.MainActivity">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="ru.hunkel.serviceipc.activities.MainActivity"/>
+        </activity>
         <activity android:name="ru.hunkel.serviceipc.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -21,13 +31,11 @@
                 android:name=".services.PasswordGeneratorService"
                 android:enabled="true"
                 android:exported="true"
-                android:process=":remotePasswordGenerator"
-        >
+                android:process=":remotePasswordGenerator">
         </service>
         <service
                 android:name=".services.LocationService"
-                android:process=":LocationService"
-        />
+                android:process=":LocationService"/>
     </application>
 
 </manifest>

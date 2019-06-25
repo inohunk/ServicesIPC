@@ -88,6 +88,22 @@ class MainActivity : AppCompatActivity() {
         updateUI()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main_overflow, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item != null) {
+            val id = item.itemId
+
+            when (id) {
+                R.id.button_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun onGenerateClick() {
 
         val passwordLength = password_length_edit.text.toString()
