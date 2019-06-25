@@ -9,7 +9,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.preference.PreferenceManager
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -145,6 +148,12 @@ class MainActivity : AppCompatActivity() {
         if (isTrackingNow) {
             locationService?.stopTracking()
         } else {
+            val pref = PreferenceManager.getDefaultSharedPreferences(this)
+            val interval = pref.getString("gps_interval", "1")?.toLong()
+            if (interval != null) {
+                Log.i("$TAG-PREF", interval.toString())
+                locationService?.setTrackingSettings(interval)
+            }
             locationService?.startTracking()
         }
     }

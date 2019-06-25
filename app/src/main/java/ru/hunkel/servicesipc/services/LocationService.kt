@@ -27,8 +27,8 @@ class LocationService : Service(), LocationListener {
     private var mServiceLooper: ServiceLooper? = null
     private var mServiceHandler: ServiceHandlerWithLooper? = null
 
-    private var isTracking = false
-
+    private var mIsTracking = false
+    private var mGpsInterval = 1L //milliseconds
 
     /*
         INNER CLASSES
@@ -46,7 +46,13 @@ class LocationService : Service(), LocationListener {
         }
 
         override fun getTrackingState(): Int {
-            return if (isTracking) LOCATION_SERVICE_TRACKING_ON else LOCATION_SERVICE_TRACKING_OFF
+            return if (mIsTracking) LOCATION_SERVICE_TRACKING_ON else LOCATION_SERVICE_TRACKING_OFF
+        }
+
+        override fun setTrackingSettings(interval: Long) {
+            if (interval in 1..999){
+                mGpsInterval = interval*1000
+            }
         }
     }
 
@@ -123,7 +129,9 @@ class LocationService : Service(), LocationListener {
                         "\tlatitude: ${location.latitude}\n" +
                         "\tlongitude: ${location.longitude}\n" +
                         "\taccuracy: ${location.accuracy}\n" +
-                        "\tspeed: ${location.speed}\n"
+                        "\tspeed: ${location.speed}\n"+
+                        "\tinterval: ${mGpsInterval}\n"
+
             )
         }
     }
@@ -150,7 +158,7 @@ class LocationService : Service(), LocationListener {
         FUNCTIONS
      */
     private fun startGpsTracking() {
-        if (isTracking) return
+        if (mIsTracking) return
 
         mServiceLooper = ServiceLooper()
 
@@ -174,35 +182,35 @@ class LocationService : Service(), LocationListener {
 
         mLocationManager?.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
-            5000,
+            mGpsInterval,
             0F,
             this@LocationService,
             mServiceLooper!!.looper
         )
-        isTracking = true
+        mIsTracking = true
 
     }
 
     private fun stopGpsTracking() {
-        if (isTracking) {
+        if (mIsTracking) {
             removeGpsUpdates()
             mServiceLooper?.looper?.thread?.interrupt()
             mServiceLooper?.interrupt()
             mLocationManager = null
             mServiceLooper = null
             mServiceHandler = null
-            isTracking = false
+            mIsTracking = false
         }
     }
 
     private fun removeGpsUpdates() {
-        if (isTracking) {
+        if (mIsTracking) {
             mLocationManager?.removeUpdates(this)
         }
     }
 
     private fun printServiceInfo() {
-        Log.d(TAG, "tracking: $isTracking")
+        Log.d(TAG, "tracking: $mIsTracking")
 
     }
 }
