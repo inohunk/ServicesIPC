@@ -93,6 +93,9 @@ class MainActivity : AppCompatActivity() {
             onStartStopTrackingClicked()
             updateUI()
         }
+        clear_logs_button.setOnClickListener {
+            onClearLogsClicked()
+        }
         updateUI()
     }
 
@@ -168,6 +171,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun onClearLogsClicked(){
+        out_text.text = ""
+    }
     private fun startLocationService() {
         val locationServiceIntent = Intent(this, LocationService::class.java)
 
@@ -234,6 +240,7 @@ class MainActivity : AppCompatActivity() {
 
         if (locationServiceBounded) {
             start_stop_tracking_button.visibility = View.VISIBLE
+            clear_logs_button.visibility = View.VISIBLE
             if ((locationService?.trackingState == LOCATION_SERVICE_TRACKING_ON)) {
                 start_stop_tracking_button.text = "TRACKING: ON"
             } else {
@@ -241,6 +248,7 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             start_stop_tracking_button.visibility = View.INVISIBLE
+            clear_logs_button.visibility = View.INVISIBLE
         }
     }
 

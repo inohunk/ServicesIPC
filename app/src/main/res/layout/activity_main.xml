@@ -41,12 +41,20 @@
             android:layout_height="wrap_content"
     />
     <Button
-            android:text="TRACKING ON"
-            android:layout_toRightOf="@id/start_stop_button"
-            android:layout_marginLeft="10dp"
+        android:text="TRACKING ON"
+        android:layout_toRightOf="@id/start_stop_button"
+        android:layout_marginLeft="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:id="@+id/start_stop_tracking_button" android:visibility="invisible"
+        android:layout_above="@id/password_length_edit"/>
+    <Button
+            android:text="CLEAR LOGS"
+            android:layout_toLeftOf="@id/start_stop_button"
+            android:layout_marginRight="10dp"
             android:layout_alignParentBottom="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/start_stop_tracking_button" android:visibility="invisible"
+            android:layout_height="wrap_content" android:id="@+id/clear_logs_button" android:visibility="invisible"
             android:layout_above="@id/password_length_edit"/>
 
 </RelativeLayout>
