@@ -1,14 +1,14 @@
 package ru.hunkel.serviceipc.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Bundle
-import android.os.IBinder
+import android.location.Location
+import android.os.*
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
@@ -23,6 +23,7 @@ import ru.hunkel.servicesipc.R
 import ru.hunkel.servicesipc.services.LocationService
 import ru.hunkel.servicesipc.services.PasswordGeneratorService
 import utils.LOCATION_SERVICE_TRACKING_ON
+import java.util.*
 
 private const val REQUEST_CODE_PERMISSIONS = 0
 
@@ -32,6 +33,10 @@ class MainActivity : AppCompatActivity() {
     /*
         VARIABLES
     */
+    private var mLocationUpdateTimer: Timer? = null
+    private var mCurrentLocation: Location? = null
+    private var mUIHandler: Handler = Handler(Looper.getMainLooper())
+    private var mGpsUpdateInterval = 1L
 
     //PASSWORD GENERATOR SERVICE
     var passwordService: IPasswordGenerator? = null
@@ -147,14 +152,19 @@ class MainActivity : AppCompatActivity() {
 
         if (isTrackingNow) {
             locationService?.stopTracking()
+            unregisterLocationUpdateTimer()
         } else {
-            val pref = PreferenceManager.getDefaultSharedPreferences(this)
-            val interval = pref.getString("gps_interval", "1")?.toLong()
-            if (interval != null) {
-                Log.i("$TAG-PREF", interval.toString())
-                locationService?.setTrackingSettings(interval)
+            val interval = PreferenceManager.getDefaultSharedPreferences(this).getString("gps_interval", "1")?.toLong()
+            if (interval == null) {
+                Log.i(TAG, "Failure on getting gps update interval (setting default value 1)")
+                mGpsUpdateInterval = 1
             }
+            mGpsUpdateInterval = interval!!
+            Log.i(TAG, "update gps interval: $interval")
+            locationService?.setTrackingSettings(interval)
+
             locationService?.startTracking()
+            registerLocationUpdateTimer()
         }
     }
 
@@ -233,4 +243,45 @@ class MainActivity : AppCompatActivity() {
             start_stop_tracking_button.visibility = View.INVISIBLE
         }
     }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateLocation(location: Location?) {
+
+        if (location == null) {
+            Toast.makeText(this, "turn on tracking!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        var msg = out_text.text.toString() +
+                "================================\n" +
+                "longitude: ${location.longitude}\n" +
+                "latitude: ${location.latitude}\n" +
+                "speed: ${location.speed}\n" +
+                "accuracy: ${location.accuracy}\n"
+
+        msg += "update interval: $mGpsUpdateInterval\n"
+        out_text.text = msg
+    }
+
+    private fun registerLocationUpdateTimer() {
+        mLocationUpdateTimer = Timer()
+
+        val task = object : TimerTask() {
+            override fun run() {
+                if (locationService?.trackingState == LOCATION_SERVICE_TRACKING_ON) {
+                    mCurrentLocation = locationService?.track
+                    if (mCurrentLocation != null) {
+                        mUIHandler.post {
+                            updateLocation(mCurrentLocation)
+                        }
+                    }
+                }
+            }
+        }
+        mLocationUpdateTimer?.schedule(task, 0L, mGpsUpdateInterval * 1000)
+    }
+
+    private fun unregisterLocationUpdateTimer() {
+        mLocationUpdateTimer?.cancel()
+    }
+
 }

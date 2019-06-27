@@ -29,6 +29,7 @@ class LocationService : Service(), LocationListener {
 
     private var mIsTracking = false
     private var mGpsInterval = 1L //milliseconds
+    private var mLastLocation: Location? = null
 
     /*
         INNER CLASSES
@@ -50,9 +51,13 @@ class LocationService : Service(), LocationListener {
         }
 
         override fun setTrackingSettings(interval: Long) {
-            if (interval in 1..999){
-                mGpsInterval = interval*1000
+            if (interval in 1..999) {
+                mGpsInterval = interval * 1000
             }
+        }
+
+        override fun getTrack(): Location? {
+            return mLastLocation
         }
     }
 
@@ -129,10 +134,11 @@ class LocationService : Service(), LocationListener {
                         "\tlatitude: ${location.latitude}\n" +
                         "\tlongitude: ${location.longitude}\n" +
                         "\taccuracy: ${location.accuracy}\n" +
-                        "\tspeed: ${location.speed}\n"+
-                        "\tinterval: ${mGpsInterval}\n"
+                        "\tspeed: ${location.speed}\n" +
+                        "\tinterval: $mGpsInterval\n"
 
             )
+            mLastLocation = location
         }
     }
 

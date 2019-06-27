@@ -5,6 +5,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="ru.hunkel.serviceipc.activities.MainActivity">
+    <ScrollView
+            android:layout_above="@id/password_length_edit"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/out_text"/>
+    </ScrollView>
     <EditText
             android:id="@+id/password_length_edit"
             android:singleLine="true"
