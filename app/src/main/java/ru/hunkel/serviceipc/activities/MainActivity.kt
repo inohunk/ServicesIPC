@@ -106,9 +106,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item != null) {
-            val id = item.itemId
-
-            when (id) {
+            when (item.itemId) {
                 R.id.button_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             }
         }
@@ -171,9 +169,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onClearLogsClicked(){
+    private fun onClearLogsClicked() {
         out_text.text = ""
     }
+
     private fun startLocationService() {
         val locationServiceIntent = Intent(this, LocationService::class.java)
 
