@@ -165,9 +165,9 @@ class MainActivity : AppCompatActivity() {
             unregisterLocationUpdateTimer()
         } else {
             val interval = PreferenceManager.getDefaultSharedPreferences(this).getString("gps_interval", "1")?.toLong()
-            if (interval == null) {
+            if (interval == null && (mGpsUpdateInterval < 1)) {
                 Log.i(TAG, "Failure on getting gps update interval (setting default value 1)")
-                mGpsUpdateInterval = 1000L
+                mGpsUpdateInterval = 1
             }
             mGpsUpdateInterval = interval!!*1000
             Log.i(TAG, "update gps interval: $mGpsUpdateInterval")
@@ -253,9 +253,9 @@ class MainActivity : AppCompatActivity() {
             start_stop_tracking_button.visibility = View.VISIBLE
             clear_logs_button.visibility = View.VISIBLE
             if ((locationService?.trackingState == LOCATION_SERVICE_TRACKING_ON)) {
-                start_stop_tracking_button.text = "TRACKING: ON"
+                start_stop_tracking_button.text = getString(R.string.location_service_tracking_on)
             } else {
-                start_stop_tracking_button.text = "TRACKING: OFF"
+                start_stop_tracking_button.text = getString(R.string.location_service_tracking_off)
             }
         } else {
             start_stop_tracking_button.visibility = View.INVISIBLE

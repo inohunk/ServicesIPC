@@ -6,6 +6,7 @@ import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import ru.hunkel.servicesipc.R
+import utils.KEY_GPS_INTERVAL
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -24,11 +25,10 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
-
             val syncSummaryProvider = Preference.SummaryProvider<EditTextPreference> { preference ->
                 preference.text.toString()
             }
-            findPreference<EditTextPreference>("gps_interval")?.summaryProvider = syncSummaryProvider
+            findPreference<EditTextPreference>(KEY_GPS_INTERVAL)?.summaryProvider = syncSummaryProvider
         }
     }
 }
