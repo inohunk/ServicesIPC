@@ -6,5 +6,5 @@ interface ILocationService {
        void stopTracking();
        int getTrackingState();
        void setTrackingSettings(long interval);
-        Location getTrack();
+       Location getTrack();
 }

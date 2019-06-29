@@ -11,7 +11,7 @@
             android:layout_height="match_parent">
         <TextView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:id="@+id/out_text"/>
+                android:layout_height="wrap_content" android:id="@+id/out_text"/>
     </ScrollView>
     <EditText
             android:id="@+id/password_length_edit"
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:inputType="number"
             android:layout_above="@id/generate_button"
-            android:hint="Password length"
+            android:hint="@string/edit_password_hint"
             android:maxLength="2"/>
     <Button
             android:id="@+id/generate_button"
@@ -30,31 +30,34 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_above="@id/start_stop_button"
-            android:text="generate"
+            android:text="@string/button_generate"
     />
     <Button
             android:id="@+id/start_stop_button"
             android:layout_alignParentBottom="true"
-            android:text="START/STOP"
+            android:text="@string/button_start_stop_service"
             android:layout_centerHorizontal="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
     />
     <Button
-        android:text="TRACKING ON"
-        android:layout_toRightOf="@id/start_stop_button"
-        android:layout_marginLeft="10dp"
-        android:layout_alignParentBottom="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:id="@+id/start_stop_tracking_button" android:visibility="invisible"
-        android:layout_above="@id/password_length_edit"/>
+            android:text="@string/location_service_tracking_on"
+            android:layout_toRightOf="@id/start_stop_button"
+            android:layout_marginLeft="10dp"
+            android:layout_alignParentBottom="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/start_stop_tracking_button"
+            android:visibility="invisible"
+            android:layout_above="@id/password_length_edit" android:layout_toEndOf="@id/start_stop_button"
+            android:layout_marginStart="10dp"/>
     <Button
-            android:text="CLEAR LOGS"
+            android:text="@string/button_clear_logs"
             android:layout_toLeftOf="@id/start_stop_button"
             android:layout_marginRight="10dp"
             android:layout_alignParentBottom="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/clear_logs_button" android:visibility="invisible"
-            android:layout_above="@id/password_length_edit"/>
+            android:layout_above="@id/password_length_edit" android:layout_toStartOf="@id/start_stop_button"
+            android:layout_marginEnd="10dp"/>
 
 </RelativeLayout>

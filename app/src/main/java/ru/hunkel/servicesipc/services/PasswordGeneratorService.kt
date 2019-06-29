@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import ru.hunkel.servicesipc.services.impl.IPasswordGeneratorImpl
+import kotlin.system.exitProcess
 
 class PasswordGeneratorService : Service() {
 
@@ -20,7 +21,6 @@ class PasswordGeneratorService : Service() {
     //This method called if passwordService started with startService() command
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand")
-
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -43,7 +43,7 @@ class PasswordGeneratorService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
-        System.exit(1)
         stopSelf()
+        exitProcess(1)
     }
 }

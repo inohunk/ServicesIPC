@@ -34,7 +34,9 @@ class LocationService : Service(), LocationListener {
     /*
         INNER CLASSES
     */
-
+    /**
+     * Location service implementation
+     */
     private inner class LocationServiceImpl : ILocationService.Stub() {
         override fun startTracking() {
             startGpsTracking()
@@ -70,6 +72,9 @@ class LocationService : Service(), LocationListener {
         }
     }
 
+    /**
+     * The class creates thread and associates looper and handler with new thread
+     */
     private inner class ServiceLooper : HandlerThread("test-thread") {
 
         private var mHandler: ServiceHandlerWithLooper? = null
@@ -84,32 +89,24 @@ class LocationService : Service(), LocationListener {
             mHandler = ServiceHandlerWithLooper(mLooper)
 
         }
-
-        fun sendTask(location: Location) {
-            mHandler!!.obtainMessage().apply {
-                obj = location
-            }.sendToTarget()
-        }
     }
 
     /*
         LIFECYCLE
     */
-
     override fun onCreate() {
         Log.d(TAG, "onCreate")
         Log.d(TAG, "service started")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
         Log.d(TAG, "onStartCommand")
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
-        stopGpsTracking()
         Log.d(TAG, "onDestroy")
+        stopGpsTracking()
         exitProcess(1)
 
     }
@@ -136,7 +133,6 @@ class LocationService : Service(), LocationListener {
                         "\taccuracy: ${location.accuracy}\n" +
                         "\tspeed: ${location.speed}\n" +
                         "\tinterval: $mGpsInterval\n"
-
             )
             mLastLocation = location
         }
@@ -169,12 +165,10 @@ class LocationService : Service(), LocationListener {
         mServiceLooper = ServiceLooper()
 
         if (mServiceLooper?.looper == null) {
-            Log.d(TAG, "test looper is null")
+            Log.d(TAG, "looper is null")
         } else {
-            Log.d(TAG, "test looper active")
+            Log.d(TAG, "looper is active")
         }
-
-        Log.d("$TAG-THREAD", Thread.currentThread().name)
 
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -194,7 +188,7 @@ class LocationService : Service(), LocationListener {
             mServiceLooper!!.looper
         )
         mIsTracking = true
-
+        Log.d(TAG, "tracking started in ${Thread.currentThread().name}")
     }
 
     private fun stopGpsTracking() {
@@ -217,6 +211,5 @@ class LocationService : Service(), LocationListener {
 
     private fun printServiceInfo() {
         Log.d(TAG, "tracking: $mIsTracking")
-
     }
 }

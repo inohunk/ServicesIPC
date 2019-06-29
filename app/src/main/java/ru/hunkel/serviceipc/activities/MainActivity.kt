@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private var mLocationUpdateTimer: Timer? = null
     private var mCurrentLocation: Location? = null
     private var mUIHandler: Handler = Handler(Looper.getMainLooper())
-    private var mGpsUpdateInterval = 1L
+    private var mGpsUpdateInterval = 1000L
 
     //PASSWORD GENERATOR SERVICE
     var passwordService: IPasswordGenerator? = null
@@ -75,11 +75,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    /*
+        Activity methods overriding
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        registerListeners()
+        updateUI()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main_overflow, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item != null) {
+            when (item.itemId) {
+                R.id.button_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    /*
+        Listeners
+     */
+    private fun registerListeners() {
         generate_button.setOnClickListener {
             onGenerateClick()
             updateUI()
@@ -96,21 +120,6 @@ class MainActivity : AppCompatActivity() {
         clear_logs_button.setOnClickListener {
             onClearLogsClicked()
         }
-        updateUI()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_main_overflow, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if (item != null) {
-            when (item.itemId) {
-                R.id.button_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun onGenerateClick() {
@@ -158,11 +167,11 @@ class MainActivity : AppCompatActivity() {
             val interval = PreferenceManager.getDefaultSharedPreferences(this).getString("gps_interval", "1")?.toLong()
             if (interval == null) {
                 Log.i(TAG, "Failure on getting gps update interval (setting default value 1)")
-                mGpsUpdateInterval = 1
+                mGpsUpdateInterval = 1000L
             }
-            mGpsUpdateInterval = interval!!
-            Log.i(TAG, "update gps interval: $interval")
-            locationService?.setTrackingSettings(interval)
+            mGpsUpdateInterval = interval!!*1000
+            Log.i(TAG, "update gps interval: $mGpsUpdateInterval")
+            locationService?.setTrackingSettings(mGpsUpdateInterval)
 
             locationService?.startTracking()
             registerLocationUpdateTimer()
@@ -173,6 +182,9 @@ class MainActivity : AppCompatActivity() {
         out_text.text = ""
     }
 
+    /*
+        FUNCTIONS
+    */
     private fun startLocationService() {
         val locationServiceIntent = Intent(this, LocationService::class.java)
 
@@ -251,6 +263,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Called when location need to be updated
+     */
     @SuppressLint("SetTextI18n")
     private fun updateLocation(location: Location?) {
 
@@ -265,10 +280,13 @@ class MainActivity : AppCompatActivity() {
                 "speed: ${location.speed}\n" +
                 "accuracy: ${location.accuracy}\n"
 
-        msg += "update interval: $mGpsUpdateInterval\n"
+        msg += "update interval: ${mGpsUpdateInterval/1000}\n"
         out_text.text = msg
     }
 
+    /**
+     * Method registering timer for update location
+     */
     private fun registerLocationUpdateTimer() {
         mLocationUpdateTimer = Timer()
 
@@ -284,9 +302,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        mLocationUpdateTimer?.schedule(task, 0L, mGpsUpdateInterval * 1000)
+        mLocationUpdateTimer?.schedule(task, 0L, mGpsUpdateInterval)
     }
 
+    /**
+     * Method removes timer for location update.
+     */
     private fun unregisterLocationUpdateTimer() {
         mLocationUpdateTimer?.cancel()
     }
