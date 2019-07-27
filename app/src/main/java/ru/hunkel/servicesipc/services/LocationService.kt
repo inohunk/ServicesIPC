@@ -64,9 +64,17 @@ class LocationService : Service(), LocationListener {
         }
 
         @SuppressLint("MissingPermission")
-        override fun punch(controlPoint: Int):Long{
-            mLocationManager!!.requestSingleUpdate(LocationManager.GPS_PROVIDER,this@LocationService,mServiceLooper?.looper)
-            return mLastLocation!!.time
+        override fun punch(controlPoint: Int): Long {
+            return if (mIsTracking) {
+                mLocationManager!!.requestSingleUpdate(
+                    LocationManager.GPS_PROVIDER,
+                    this@LocationService,
+                    mServiceLooper?.looper
+                )
+                mLastLocation?.time!!
+            } else {
+                System.currentTimeMillis()
+            }
         }
     }
 
@@ -108,7 +116,7 @@ class LocationService : Service(), LocationListener {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand")
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onDestroy() {
@@ -195,7 +203,7 @@ class LocationService : Service(), LocationListener {
             mServiceLooper!!.looper
         )
         mIsTracking = true
-        Log.d(TAG, "tracking started in ${Thread.currentThread().name}")
+        Log.d(TAG, "tracking started in ${Thread.currentThread().name} thread")
     }
 
     private fun stopGpsTracking() {
