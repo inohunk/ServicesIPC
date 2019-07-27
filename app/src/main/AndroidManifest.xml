@@ -30,10 +30,14 @@
         <service
                 android:name=".services.PasswordGeneratorService"
                 android:enabled="true"
+                android:singleUser="false"
+                android:externalService="true"
                 android:exported="true"
                 android:process=":remotePasswordGenerator">
         </service>
         <service
+                android:exported="true"
+                android:enabled="true"
                 android:name=".services.LocationService"
                 android:process=":LocationService"/>
     </application>

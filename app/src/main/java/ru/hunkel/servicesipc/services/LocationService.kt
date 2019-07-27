@@ -1,6 +1,7 @@
 package ru.hunkel.servicesipc.services
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -60,6 +61,12 @@ class LocationService : Service(), LocationListener {
 
         override fun getTrack(): Location? {
             return mLastLocation
+        }
+
+        @SuppressLint("MissingPermission")
+        override fun punch(controlPoint: Int):Long{
+            mLocationManager!!.requestSingleUpdate(LocationManager.GPS_PROVIDER,this@LocationService,mServiceLooper?.looper)
+            return mLastLocation!!.time
         }
     }
 
